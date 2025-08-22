@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+  payment-service:
+    hostname: payment-service
+    image: payment-service:0.0.1
+    networks:
+      - pandora-network-backend
+    expose:
+      - 9794
+    ports:
+      - 9794:9794
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        reservations:
+          cpus: "0.50"
+          memory: 512M
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    environment:
+      - "SPRING_PROFILES_ACTIVE=stage"
+    entrypoint: [ "java","-jar","app.jar" ]
+
+networks:
+  pandora-network-backend:
