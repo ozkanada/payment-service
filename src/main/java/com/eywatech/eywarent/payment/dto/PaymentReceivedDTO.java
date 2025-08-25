@@ -1,6 +1,7 @@
 package com.eywatech.eywarent.payment.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 import com.eywatech.eywarent.payment.enums.Currency;
 import com.eywatech.eywarent.payment.enums.PaymentReason;
 import com.eywatech.eywarent.payment.enums.PaymentType;

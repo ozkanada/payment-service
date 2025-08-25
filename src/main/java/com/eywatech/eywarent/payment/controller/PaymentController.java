@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.eywatech.eywarent.payment.client.HgsClient;
 import com.eywatech.eywarent.payment.dao.PaymentReceivedDAO;
 import com.eywatech.eywarent.payment.dto.PaymentReceivedDTO;
 import com.eywatech.eywarent.payment.enums.FriendlyMessageCodes;
+import com.eywatech.eywarent.payment.enums.PaymentReason;
 import com.eywatech.eywarent.payment.enums.PaymentType;
 import com.eywatech.eywarent.payment.exception.exceptions.CardInfoNotBlankException;
 import com.eywatech.eywarent.payment.exception.exceptions.PaymentNotFoundException;
@@ -48,11 +51,14 @@ public class PaymentController {
 		 */
 		// String htmlForm = paymentService.prepare3DForm(dao);
 		//return ResponseEntity.ok(htmlForm);
-		if (dao.getPaymentReason().equals(PaymentType.SP)) {
+		if (dao.getPaymentType().equals(PaymentType.SP)) {
 			if (dao.getCardFullname().isEmpty() || dao.getCardId().isEmpty() || dao.getCardExpiredMont().isEmpty()
 					|| dao.getCardExpiredYear().isEmpty() || dao.getCardCvv().isEmpty()) {
 				throw new CardInfoNotBlankException(FriendlyMessageCodes.CARD_INFO_NOT_BLANK_EXCEPTION, "Card info is not blank!");
 			}
+		}
+		if (dao.getPaymentReason().equals(PaymentReason.HGS)) {
+			paymentService.payHgs(dao.getHgsIdList());
 		}
 		PaymentReceivedDTO response =  paymentService.save(dao);
 		log.debug("[{}][createPayment] -> response: {}", this.getClass().getSimpleName(), response);

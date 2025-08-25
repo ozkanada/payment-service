@@ -1,25 +1,33 @@
 package com.eywatech.eywarent.payment.service.impl;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.eywatech.eywarent.payment.MacUtils;
+import com.eywatech.eywarent.payment.client.HgsClient;
 import com.eywatech.eywarent.payment.dao.PaymentReceivedDAO;
 import com.eywatech.eywarent.payment.dto.PaymentReceivedDTO;
 import com.eywatech.eywarent.payment.entity.PaymentReceived;
+import com.eywatech.eywarent.payment.enums.FriendlyMessageCodes;
+import com.eywatech.eywarent.payment.exception.exceptions.HgsPaymentException;
 import com.eywatech.eywarent.payment.mapper.PaymentReceivedMapper;
 import com.eywatech.eywarent.payment.repository.IPaymentReceivedRepository;
+import com.eywatech.pandora.response.InternalApiResponse;
 import com.eywatech.pandora.service.impl.BaseServiceImpl;
 
 @Service
 public class PaymentServiceImpl extends
 		BaseServiceImpl<PaymentReceived, String, PaymentReceivedDAO, PaymentReceivedDTO, PaymentReceivedMapper, IPaymentReceivedRepository> {
 
-	public PaymentServiceImpl(IPaymentReceivedRepository repository, PaymentReceivedMapper mapper) {
+	private final HgsClient hgsClient;
+	
+	public PaymentServiceImpl(IPaymentReceivedRepository repository, PaymentReceivedMapper mapper, HgsClient hgsClient) {
 		super(repository, mapper);
+		this.hgsClient=hgsClient;
 	}
 	
 	@Override
@@ -57,4 +65,12 @@ public class PaymentServiceImpl extends
 	public Page<PaymentReceivedDTO> getAllByDocumentNo(String documentNo, Pageable pageable) {
 		return repository.findAllByDocumentNo(documentNo, pageable).map(mapper::toDto);
 	}
+	
+	public void payHgs(List<String> hgsIdList) {
+        InternalApiResponse<Void> response = hgsClient.updateForPayment(hgsIdList);
+
+        if (response.isHasError()) {
+            throw new HgsPaymentException(FriendlyMessageCodes.HGS_PAYMENT_EXCEPTION,"HGS ödeme güncellemesi başarısız!");
+        }
+    }
 }
